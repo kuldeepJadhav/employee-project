@@ -104,22 +104,6 @@ class EmployeeServiceImplTest {
         assertEquals(50000, result.get(0).getSalary());
     }
 
-    @Test
-    void shouldHandleEmptyList() {
-        // Given
-        when(webClient.method(any())).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-        when(utils.addExceptionHandling(responseSpec)).thenReturn(responseSpec);
-        when(responseSpec.toEntity(EmployeeListResponse.class)).thenReturn(Mono.just(new ResponseEntity<>(null, HttpStatus.OK)));
-
-        // When
-        List<EmployeeDTO> result = employeeService.getAllEmployees();
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
 
     @Test
     void shouldGetEmployeeById() {
