@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -14,12 +15,12 @@ public class Utils {
     public WebClient.ResponseSpec addExceptionHandling(WebClient.ResponseSpec retrieve) {
         return retrieve.onStatus((HttpStatusCode code) -> code.equals(HttpStatus.TOO_MANY_REQUESTS), resp -> {
             log.warn("Received 429 Too Many Requests - creating ApiException for retry");
-            return resp.bodyToMono(String.class)
-                    .map(body -> new ApiException("Api Rate limit hit, please try after some time" + body, HttpStatus.TOO_MANY_REQUESTS));
+            return resp.bodyToMono(String.class).defaultIfEmpty("").
+            flatMap(body -> Mono.error(new ApiException("Rate Limit Reached, try after some time", HttpStatus.TOO_MANY_REQUESTS)));
         }).onStatus((HttpStatusCode code) -> code.equals(HttpStatus.NOT_FOUND), resp -> {
                     log.warn("Received 404 client error - creating ApiException");
                     return resp.bodyToMono(String.class)
-                            .map(body -> new ApiException("Entity Not Found" + body, HttpStatus.NOT_FOUND));
+                            .map(body -> new ApiException("Entity Not Found", HttpStatus.NOT_FOUND));
         }).onStatus(HttpStatusCode::is4xxClientError, resp -> {
             log.warn("Received 4xx client error - creating ApiException");
             return resp.bodyToMono(String.class)

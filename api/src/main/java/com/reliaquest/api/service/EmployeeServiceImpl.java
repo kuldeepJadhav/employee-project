@@ -14,9 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -45,22 +49,32 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    @Retry
+    @Retryable(
+            retryFor = {com.reliaquest.api.exception.ApiException.class},
+            exceptionExpression = "#root.status.value() == 429",
+            maxAttemptsExpression = "#{${retry.max-attempts}}",
+            backoff = @Backoff(
+                    delayExpression = "#{${retry.delay-ms}}",
+                    multiplierExpression = "#{${retry.multiplier}}",
+                    maxDelayExpression = "#{${retry.max-delay-ms}}",
+                    randomExpression = "#{${retry.jitter}}"
+            )
+    )
     public List<EmployeeDTO> getAllEmployees() {
         String url = serverBaseUrl + EMPLOYEE;
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+//        if (1 == 1)
+//            throw new ApiException("", HttpStatus.TOO_MANY_REQUESTS);
         WebClient.ResponseSpec resSpec = webClient
                 .method(HttpMethod.GET)
                 .uri(builder.build().toString())
                 .retrieve();
         resSpec = utils.addExceptionHandling(resSpec);
-        ResponseEntity<EmployeeListResponse> respRes = resSpec.toEntity(EmployeeListResponse.class)
-                .block();
-        if (!Objects.isNull(respRes)) {
-            EmployeeListResponse body = respRes.getBody();
-            return Objects.isNull(body) ? new ArrayList<>() : body.getData();
-        }
-        return new ArrayList<>();
+        return resSpec.toEntity(EmployeeListResponse.class)
+                .block()
+                .getBody()
+                .getData();
+
     }
 
     @Override
@@ -116,6 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             WebClient.ResponseSpec resSpec = webClient.post()
                     .uri(builder.build().toString())
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .bodyValue(mapper.writeValueAsString(employeeInput))
                     .retrieve();
             resSpec = utils.addExceptionHandling(resSpec);

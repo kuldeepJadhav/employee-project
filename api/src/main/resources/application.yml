@@ -3,7 +3,7 @@ server.port: 8111
 
 retry:
   max-attempts: 3
-  delay-ms: 20000
+  delay-ms: 1000
   multiplier: 2.0
-  max-delay-ms: 90000
+  max-delay-ms: 5000
   jitter: true
