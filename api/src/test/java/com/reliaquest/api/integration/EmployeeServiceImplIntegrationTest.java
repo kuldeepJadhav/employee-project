@@ -29,8 +29,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = ApiApplication.class)
-@TestPropertySource(properties = {"server.api.url=http://localhost:9097"})
+@SpringBootTest(classes = ApiApplication.class)
+@TestPropertySource(properties = {"server.port=8113", "server.api.url=http://localhost:9097"})
 class EmployeeServiceImplIntegrationTest {
 
     @Autowired
