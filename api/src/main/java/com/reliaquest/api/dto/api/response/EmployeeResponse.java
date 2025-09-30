@@ -6,5 +6,4 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
-public class EmployeeResponse extends Response<EmployeeDTO>{
-}
+public class EmployeeResponse extends Response<EmployeeDTO> {}

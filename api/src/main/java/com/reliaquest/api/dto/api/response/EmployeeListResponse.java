@@ -1,12 +1,10 @@
 package com.reliaquest.api.dto.api.response;
 
 import com.reliaquest.api.dto.EmployeeDTO;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @NoArgsConstructor
 @Data
-public class EmployeeListResponse extends Response<List<EmployeeDTO>>{
-}
+public class EmployeeListResponse extends Response<List<EmployeeDTO>> {}

@@ -1,7 +1,10 @@
 package com.reliaquest.api.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reliaquest.api.dto.EmployeeCreateRequest;
 import com.reliaquest.api.dto.EmployeeDTO;
 import com.reliaquest.api.dto.api.response.EmployeeListResponse;
@@ -9,6 +12,10 @@ import com.reliaquest.api.dto.api.response.EmployeeResponse;
 import com.reliaquest.api.dto.api.response.GenericResponse;
 import com.reliaquest.api.exception.ApiException;
 import com.reliaquest.api.utils.Utils;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,24 +29,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(properties = {
-    "server.api.url=http://localhost:8112/api/v1"
-})
+@TestPropertySource(properties = {"server.api.url=http://localhost:8112/api/v1"})
 class EmployeeServiceImplTest {
 
     @Mock
     private WebClient webClient;
-
 
     @Mock
     private WebClient.RequestBodyUriSpec requestBodyUriSpec;
@@ -104,7 +99,6 @@ class EmployeeServiceImplTest {
         assertEquals(50000, result.get(0).getSalary());
     }
 
-
     @Test
     void shouldGetEmployeeById() {
         // Given
@@ -133,7 +127,7 @@ class EmployeeServiceImplTest {
         // Given
         String employeeId = "123";
         ApiException apiException = new ApiException("Employee not found", HttpStatus.NOT_FOUND);
-        
+
         when(webClient.method(any())).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.retrieve()).thenReturn(responseSpec);
@@ -141,9 +135,8 @@ class EmployeeServiceImplTest {
         when(responseSpec.toEntity(EmployeeResponse.class)).thenReturn(Mono.error(apiException));
 
         // When & Then
-        ApiException exception = assertThrows(ApiException.class, () -> 
-            employeeService.getEmployeeById(employeeId));
-        
+        ApiException exception = assertThrows(ApiException.class, () -> employeeService.getEmployeeById(employeeId));
+
         assertEquals("Employee not found", exception.getMessage());
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
@@ -273,7 +266,7 @@ class EmployeeServiceImplTest {
                 createEmployee("Ivy", 20000),
                 createEmployee("Jack", 10000),
                 createEmployee("Kate", 5000) // This should be excluded
-        );
+                );
 
         EmployeeListResponse response = new EmployeeListResponse();
         response.setData(employees);
@@ -326,12 +319,12 @@ class EmployeeServiceImplTest {
         // Given
         String employeeId = "123";
         EmployeeDTO employeeToDelete = createEmployee("John Doe", 50000);
-        
+
         // Mock GET employee by ID response
         EmployeeResponse getEmployeeResponse = new EmployeeResponse();
         getEmployeeResponse.setData(employeeToDelete);
         ResponseEntity<EmployeeResponse> getResponseEntity = new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
-        
+
         // Mock DELETE employee response
         GenericResponse deleteResponse = new GenericResponse();
         deleteResponse.setData("Employee John Doe deleted successfully");

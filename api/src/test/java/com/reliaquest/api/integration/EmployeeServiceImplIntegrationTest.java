@@ -1,56 +1,41 @@
 package com.reliaquest.api.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.reliaquest.api.ApiApplication;
-import com.reliaquest.api.dto.EmployeeCreateRequest;
-import com.reliaquest.api.dto.EmployeeDTO;
-import com.reliaquest.api.dto.api.response.EmployeeListResponse;
-import com.reliaquest.api.dto.api.response.EmployeeResponse;
-import com.reliaquest.api.dto.api.response.GenericResponse;
-import com.reliaquest.api.service.EmployeeService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.JsonBody;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reliaquest.api.ApiApplication;
+import com.reliaquest.api.dto.EmployeeCreateRequest;
+import com.reliaquest.api.dto.EmployeeDTO;
+import com.reliaquest.api.dto.api.response.EmployeeListResponse;
+import com.reliaquest.api.dto.api.response.EmployeeResponse;
+import java.util.Arrays;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+
 @AutoConfigureMockMvc
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        classes = ApiApplication.class
-)
-@TestPropertySource(properties = {
-        "server.api.url=http://localhost:9097"
-})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = ApiApplication.class)
+@TestPropertySource(properties = {"server.api.url=http://localhost:9097"})
 class EmployeeServiceImplIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     private ClientAndServer mockServer;
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -70,19 +55,15 @@ class EmployeeServiceImplIntegrationTest {
         EmployeeDTO testEmployee = createTestEmployee();
         EmployeeListResponse mockResponse = new EmployeeListResponse();
         mockResponse.setData(Arrays.asList(testEmployee));
-        
+
         String responseJson = objectMapper.writeValueAsString(mockResponse);
 
-        new MockServerClient("localhost", 9097).when(
-                request()
-                        .withMethod("GET")
-                        .withPath("/employee")
-        ).respond(
-                response()
+        new MockServerClient("localhost", 9097)
+                .when(request().withMethod("GET").withPath("/employee"))
+                .respond(response()
                         .withStatusCode(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(responseJson)
-        );
+                        .withBody(responseJson));
 
         mockMvc.perform(get("/v1/employee"))
                 .andExpect(status().isOk())
@@ -92,7 +73,6 @@ class EmployeeServiceImplIntegrationTest {
                 .andExpect(jsonPath("$[0].salary").value(50000))
                 .andExpect(jsonPath("$[0].age").value(30))
                 .andExpect(jsonPath("$[0].title").value("Software Engineer"));
-
     }
 
     @Test
@@ -112,24 +92,20 @@ class EmployeeServiceImplIntegrationTest {
 
         EmployeeResponse mockResponse = new EmployeeResponse();
         mockResponse.setData(createdEmployee);
-        
+
         String responseJson = objectMapper.writeValueAsString(mockResponse);
         String requestJson = objectMapper.writeValueAsString(createRequest);
 
-        new MockServerClient("localhost", 9097).when(
-                request()
-                        .withMethod("POST")
-                        .withPath("/employee")
-        ).respond(
-                response()
+        new MockServerClient("localhost", 9097)
+                .when(request().withMethod("POST").withPath("/employee"))
+                .respond(response()
                         .withStatusCode(201)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(responseJson)
-        );
+                        .withBody(responseJson));
 
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.name").value("Jane Smith"))
@@ -148,5 +124,4 @@ class EmployeeServiceImplIntegrationTest {
         employee.setEmail("john.doe@example.com");
         return employee;
     }
-
 }

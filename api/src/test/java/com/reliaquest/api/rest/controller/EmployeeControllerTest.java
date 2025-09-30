@@ -1,24 +1,5 @@
 package com.reliaquest.api.rest.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.reliaquest.api.dto.EmployeeCreateRequest;
-import com.reliaquest.api.dto.EmployeeDTO;
-import com.reliaquest.api.exception.ApiException;
-import com.reliaquest.api.service.EmployeeService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -27,6 +8,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reliaquest.api.dto.EmployeeCreateRequest;
+import com.reliaquest.api.dto.EmployeeDTO;
+import com.reliaquest.api.exception.ApiException;
+import com.reliaquest.api.service.EmployeeService;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({EmployeeController.class, com.reliaquest.api.rest.controller.advice.ControllerAdvice.class})
 class EmployeeControllerTest {
@@ -110,11 +109,11 @@ class EmployeeControllerTest {
     void shouldHandle404ForEmployeeNotFound() throws Exception {
         // Given
         String employeeId = "999";
-        when(employeeService.getEmployeeById(employeeId)).thenThrow(new ApiException("Entity not found", HttpStatus.NOT_FOUND));
+        when(employeeService.getEmployeeById(employeeId))
+                .thenThrow(new ApiException("Entity not found", HttpStatus.NOT_FOUND));
 
         // When & Then
-        mockMvc.perform(get("/v1/employee/{id}", employeeId))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/v1/employee/{id}", employeeId)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -162,8 +161,8 @@ class EmployeeControllerTest {
     @Test
     void shouldGetTop10HighestPaidEmployees() throws Exception {
         // Given
-        List<String> topTenNames = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve", 
-                "Frank", "Grace", "Henry", "Ivy", "Jack");
+        List<String> topTenNames =
+                Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Henry", "Ivy", "Jack");
         when(employeeService.getTopTenHighestEarningEmployeeNames()).thenReturn(topTenNames);
 
         // When & Then
@@ -183,8 +182,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testCreateRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(testCreateRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.name").value("John Doe"))
@@ -204,8 +203,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
@@ -224,8 +223,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
@@ -244,8 +243,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
@@ -264,8 +263,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
@@ -284,8 +283,8 @@ class EmployeeControllerTest {
 
         // When & Then
         mockMvc.perform(post("/v1/employee")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
