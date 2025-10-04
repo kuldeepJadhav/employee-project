@@ -13,6 +13,7 @@ import org.springframework.retry.annotation.Retryable;
         retryFor = {com.reliaquest.api.exception.ApiException.class},
         exceptionExpression = "#root.status.value() == 429",
         maxAttemptsExpression = "#{${retry.max-attempts}}",
+        listeners = {"customRetryListener"},
         backoff =
                 @Backoff(
                         delayExpression = "#{${retry.delay-ms}}",

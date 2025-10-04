@@ -19,22 +19,19 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final WebClient webClient;
@@ -47,21 +44,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    @Retryable(
-            retryFor = {com.reliaquest.api.exception.ApiException.class},
-            exceptionExpression = "#root.status.value() == 429",
-            maxAttemptsExpression = "#{${retry.max-attempts}}",
-            backoff =
-                    @Backoff(
-                            delayExpression = "#{${retry.delay-ms}}",
-                            multiplierExpression = "#{${retry.multiplier}}",
-                            maxDelayExpression = "#{${retry.max-delay-ms}}",
-                            randomExpression = "#{${retry.jitter}}"))
+    @Retry
     public List<EmployeeDTO> getAllEmployees() {
         String url = serverBaseUrl + EMPLOYEE;
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        //        if (1 == 1)
-        //            throw new ApiException("", HttpStatus.TOO_MANY_REQUESTS);
+
         WebClient.ResponseSpec resSpec =
                 webClient.method(HttpMethod.GET).uri(builder.build().toString()).retrieve();
         resSpec = utils.addExceptionHandling(resSpec);
@@ -110,6 +97,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Retry
     public EmployeeDTO createEmployee(EmployeeCreateRequest employeeInput) {
         try {
             String url = serverBaseUrl + EMPLOYEE;
@@ -141,16 +129,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         String url = serverBaseUrl + EMPLOYEE;
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
         WebClient.ResponseSpec resSpec = null;
-        // try {
         resSpec = webClient
                 .method(HttpMethod.DELETE)
                 .uri(builder.build().toString())
                 .bodyValue(Map.of("name", name))
                 .retrieve();
-        //        } catch (JsonProcessingException e) {
-        //            throw new ApiException("Error occurred while creating delete request for employee",
-        // HttpStatus.INTERNAL_SERVER_ERROR);
-        //        }
         resSpec = utils.addExceptionHandling(resSpec);
         ResponseEntity<GenericResponse> respRes =
                 resSpec.toEntity(GenericResponse.class).block();
