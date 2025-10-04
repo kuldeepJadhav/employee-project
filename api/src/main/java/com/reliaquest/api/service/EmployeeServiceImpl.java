@@ -73,6 +73,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Retry
     public List<EmployeeDTO> getEmployeesByNameSearch(String name) {
         return getAllEmployees().stream()
                 .filter(e -> e.getName().contains(name))
@@ -80,6 +81,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Retry
     public Integer getHighestSalaryOfEmployees() {
         return getAllEmployees().stream()
                 .map(e -> e.getSalary())
@@ -88,6 +90,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Retry
     public List<String> getTopTenHighestEarningEmployeeNames() {
         return getAllEmployees().stream()
                 .sorted((e1, e2) -> Integer.compare(e2.getSalary(), e1.getSalary())) // Descending order by salary
